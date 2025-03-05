@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:collection';
 
+import 'package:cbj_hub/infrastructure/web_socket/hub_javascript_web_socket.dart';
 import 'package:cbj_integrations_controller/integrations_controller.dart';
 import 'package:dartz/dartz.dart';
 
-class MatterLightEntity extends GenericDimmableLightDE {
-  MatterLightEntity({
+class MatterDimmableLightEntity extends GenericDimmableLightDE {
+  MatterDimmableLightEntity({
     required super.uniqueId,
     required super.entityUniqueId,
     required super.cbjEntityName,
@@ -32,15 +34,15 @@ class MatterLightEntity extends GenericDimmableLightDE {
     required super.entityKey,
     required super.requestTimeStamp,
     required super.lastResponseFromDeviceTimeStamp,
-    required super.entitiyCbjUniqueId,
+    required super.entityCbjUniqueId,
     required super.lightSwitchState,
     required super.lightBrightness,
   }) : super(
           cbjDeviceVendor: CbjDeviceVendor(VendorsAndServices.matter),
         );
 
-  factory MatterLightEntity.fromGeneric(GenericDimmableLightDE entity) {
-    return MatterLightEntity(
+  factory MatterDimmableLightEntity.fromGeneric(GenericDimmableLightDE entity) {
+    return MatterDimmableLightEntity(
       uniqueId: entity.uniqueId,
       entityUniqueId: entity.entityUniqueId,
       cbjEntityName: entity.cbjEntityName,
@@ -69,48 +71,45 @@ class MatterLightEntity extends GenericDimmableLightDE {
       requestTimeStamp: entity.requestTimeStamp,
       lastResponseFromDeviceTimeStamp: entity.lastResponseFromDeviceTimeStamp,
       lightSwitchState: entity.lightSwitchState,
-      entitiyCbjUniqueId: entity.entitiyCbjUniqueId,
+      entityCbjUniqueId: entity.entityCbjUniqueId,
       lightBrightness: entity.lightBrightness,
     );
   }
 
   @override
   Future<Either<CoreFailure, Unit>> turnOnLight() async {
-    // lightSwitchState =
-    //     GenericDimmableLightSwitchState(EntityActions.on.toString());
-    // try {
-    //   final String nodeRedApiBaseTopic =
-    //       IMqttServerRepository.instance.getNodeRedApiBaseTopic();
-    //
-    //   final String nodeRedDevicesTopic =
-    //       IMqttServerRepository.instance.getNodeRedDevicesTopicTypeName();
-    //   final String topic =
-    //       '$nodeRedApiBaseTopic/$nodeRedDevicesTopic/${entityKey.getOrCrash()}/${EspHomeNodeRedApi.deviceStateProperty}/${EspHomeNodeRedApi.inputDeviceProperty}';
-    //
-    //   IMqttServerRepository.instance
-    //       .publishMessage(topic, """{"state":true}""");
-    // } catch (e) {
-    //   return left(const CoreFailure.unexpected());
-    // }
+    lightSwitchState =
+        GenericDimmableLightSwitchState(EntityActions.on.toString());
+    try {
+      final RequestActionObject action = RequestActionObject(
+        entityIds: HashSet()..add(uniqueId.getOrCrash()),
+        property: EntityProperties.lightSwitchState,
+        actionType: EntityActions.on,
+        vendors: HashSet()..add(VendorsAndServices.matter),
+      );
+      HubJavascriptWebSocket.instance.setState(action);
+    } catch (e) {
+      return left(const CoreFailure.unexpected());
+    }
     return right(unit);
   }
 
   @override
   Future<Either<CoreFailure, Unit>> turnOffLight() async {
+    lightSwitchState =
+        GenericDimmableLightSwitchState(EntityActions.off.toString());
     try {
-      // final setStateBodyResponse = NodeRedRepository().
-      //
-      // if (setStateBodyResponse == null) {
-      //   throw 'setStateBodyResponse is null';
-      // }
-
-      return right(unit);
+      final RequestActionObject action = RequestActionObject(
+        entityIds: HashSet()..add(uniqueId.getOrCrash()),
+        property: EntityProperties.lightSwitchState,
+        actionType: EntityActions.off,
+        vendors: HashSet()..add(VendorsAndServices.matter),
+      );
+      HubJavascriptWebSocket.instance.setState(action);
     } catch (e) {
-      // As we are using the fast = true the response is always
-      // MatterHttpException Error
-      return right(unit);
-      // return left(const CoreFailure.unexpected());
+      return left(const CoreFailure.unexpected());
     }
+    return right(unit);
   }
 
   @override
