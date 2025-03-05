@@ -26,6 +26,23 @@ Future initializeIntegrationsController({
   await DevicePinListManager().setPhysicalDeviceType();
 
   Hive.init(await dbPath());
+  await IDbRepository.instance.asyncConstructor();
+  networkHelper();
+}
+
+void networkHelper() {
+  final NetworkObject network = NetworkObject(
+    bssid: null,
+    ssid: null,
+    subNet: null,
+    longitude: null,
+    latitude: null,
+    remotePipe: null,
+    type: null,
+    uniqueId: 'home',
+  );
+  NetworksManager().addNetwork(network);
+  NetworksManager().setCurrentNetwork(network.uniqueId);
 }
 
 Future<String> dbPath() async {
