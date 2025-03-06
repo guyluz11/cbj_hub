@@ -159,4 +159,17 @@ class _HubServerController extends IHubServerController {
     );
     HubRequestsToApp.stream.sink.add(request);
   }
+
+  @override
+  Future sendAllVendors() async {
+    final List<VendorEntityInformation> vendors = IcSynchronizer().getVendors();
+
+    final String jsonString =
+        jsonEncode(vendors.map((e) => e.toJson()).toList());
+    final RequestsAndStatusFromHub request = RequestsAndStatusFromHub(
+      sendingType: SendingType.getAllSupportedVendors.name,
+      allRemoteCommands: jsonEncode(jsonString),
+    );
+    HubRequestsToApp.stream.sink.add(request);
+  }
 }

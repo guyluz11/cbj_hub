@@ -84,6 +84,8 @@ class DeviceHelperMethods {
         ).toDomain();
         IcSynchronizer().setEntitiesState(action);
         return;
+      case SendingType.getAllSupportedVendors:
+        return IHubServerController.instance.sendAllVendors();
       case SendingType.remotePipesInformation:
       // final Map<String, dynamic> jsonDecoded =
       //     jsonDecode(clientStatusRequests.allRemoteCommands)

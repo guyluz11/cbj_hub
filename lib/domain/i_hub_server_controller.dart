@@ -31,4 +31,5 @@ abstract class IHubServerController {
   Future sendAllEntities();
   Future sendAllAreas();
   Future sendAllScenes();
+  Future sendAllVendors();
 }
